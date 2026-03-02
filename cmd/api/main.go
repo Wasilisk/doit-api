@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
+	_ "github.com/lib/pq"
 	"github.com/wasilisk/doit-api/internal/config"
 	"github.com/wasilisk/doit-api/internal/database"
 )
