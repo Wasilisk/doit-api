@@ -9,8 +9,18 @@ import (
 	"github.com/joho/godotenv"
 )
 
+type DBConfig struct {
+	Host     string
+	Port     string
+	User     string
+	Password string
+	Name     string
+	SSLMode  string
+}
+
 type Config struct {
 	Port string
+	DB   DBConfig
 }
 
 func Load() *Config {
@@ -23,6 +33,14 @@ func Load() *Config {
 
 	cfg := &Config{
 		Port: getEnv("PORT", "8080"),
+		DB: DBConfig{
+			Host:     getEnv("DB_HOST", "localhost"),
+			Port:     getEnv("DB_PORT", "5432"),
+			User:     getEnv("DB_USER", "postgres"),
+			Password: getEnv("DB_PASSWORD", ""),
+			Name:     getEnv("DB_NAME", "postgres"),
+			SSLMode:  getEnv("DB_SSLMODE", "disable"),
+		},
 	}
 
 	return cfg
