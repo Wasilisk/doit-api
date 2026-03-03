@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/wasilisk/doit-api/internal/dto"
+	handlerutils "github.com/wasilisk/doit-api/internal/handler_utils"
 	"github.com/wasilisk/doit-api/internal/service"
 )
 
@@ -17,13 +18,16 @@ func NewAuthHandler(authService *service.AuthService) *AuthHandler {
 }
 
 func (h *AuthHandler) Register(c *gin.Context) {
-	var req dto.RegisterRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	req, ok := handlerutils.BindJSON[dto.RegisterRequest](c)
+	if !ok {
 		return
 	}
 
-	token, err := h.authService.Register(c.Request.Context(), req.Email, req.Password)
+	token, err := h.authService.Register(c.Request.Context(), service.RegisterInput{
+		Email:    req.Email,
+		Password: req.Password,
+		FullName: req.FullName,
+	})
 	if err != nil {
 		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		return
@@ -33,9 +37,8 @@ func (h *AuthHandler) Register(c *gin.Context) {
 }
 
 func (h *AuthHandler) Login(c *gin.Context) {
-	var req dto.LoginRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	req, ok := handlerutils.BindJSON[dto.LoginRequest](c)
+	if !ok {
 		return
 	}
 
