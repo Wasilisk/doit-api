@@ -10,18 +10,22 @@ import (
 )
 
 type App struct {
-	authHandler *handler.AuthHandler
+	authHandler    *handler.AuthHandler
+	profileHandler *handler.ProfileHandler
 }
 
 func NewApp(db *sql.DB, cfg *config.Config) *App {
 	// repositories
 	userRepo := repository.NewUserRepository(db)
+	profileRepo := repository.NewProfileRepository(db)
 
 	// services
-	authService := service.NewAuthService(userRepo, cfg.JWT_SECRET)
+	authService := service.NewAuthService(userRepo, profileRepo, cfg.JWT_SECRET)
+	profileService := service.NewProfileService(profileRepo)
 
 	// handlers
 	return &App{
-		authHandler: handler.NewAuthHandler(authService),
+		authHandler:    handler.NewAuthHandler(authService),
+		profileHandler: handler.NewProfileHandler(profileService),
 	}
 }
