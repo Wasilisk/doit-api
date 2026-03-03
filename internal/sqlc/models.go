@@ -17,3 +17,12 @@ type User struct {
 	CreatedAt sql.NullTime
 	UpdatedAt sql.NullTime
 }
+
+type UserProfile struct {
+	ID        uuid.UUID
+	UserID    uuid.UUID
+	FullName  string
+	AvatarUrl sql.NullString
+	CreatedAt sql.NullTime
+	UpdatedAt sql.NullTime
+}
