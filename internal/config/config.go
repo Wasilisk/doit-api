@@ -19,8 +19,9 @@ type DBConfig struct {
 }
 
 type Config struct {
-	Port string
-	DB   DBConfig
+	Port       string
+	DB         DBConfig
+	JWT_SECRET string
 }
 
 func Load() *Config {
