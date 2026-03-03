@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/wasilisk/doit-api/internal/utils"
 )
 
@@ -28,7 +29,13 @@ func Auth(jwtSecret string) gin.HandlerFunc {
 			return
 		}
 
-		c.Set("userID", claims.UserID)
+		userID, err := uuid.Parse(claims.UserID)
+		if err != nil {
+			c.AbortWithStatusJSON(400, gin.H{"error": "invalid userID"})
+			return
+		}
+
+		c.Set("userID", userID)
 		c.Next()
 	}
 }
