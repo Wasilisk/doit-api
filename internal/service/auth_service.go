@@ -9,26 +9,38 @@ import (
 )
 
 type AuthService struct {
-	userRepo  *repository.UserRepository
-	jwtSecret string
+	userRepo    *repository.UserRepository
+	profileRepo *repository.ProfileRepository
+	jwtSecret   string
 }
 
-func NewAuthService(userRepo *repository.UserRepository, jwtSecret string) *AuthService {
-	return &AuthService{userRepo: userRepo, jwtSecret: jwtSecret}
+type RegisterInput struct {
+	Email    string
+	Password string
+	FullName string
 }
 
-func (s *AuthService) Register(ctx context.Context, email, password string) (string, error) {
-	hashedPassword, err := utils.HashPassword(password)
+func NewAuthService(userRepo *repository.UserRepository, profileRepo *repository.ProfileRepository, jwtSecret string) *AuthService {
+	return &AuthService{userRepo: userRepo, profileRepo: profileRepo, jwtSecret: jwtSecret}
+}
+
+func (s *AuthService) Register(ctx context.Context, input RegisterInput) (string, error) {
+	hashedPassword, err := utils.HashPassword(input.Password)
 	if err != nil {
 		return "", err
 	}
 
-	user, err := s.userRepo.CreateUser(ctx, email, hashedPassword)
+	user, err := s.userRepo.CreateUser(ctx, input.Email, hashedPassword)
 	if err != nil {
 		return "", errors.New(err.Error())
 	}
 
-	return utils.GenerateToken(user.ID, s.jwtSecret)
+	_, err = s.profileRepo.CreateProfile(ctx, repository.CreateProfileInput{UserID: user.ID, FullName: input.FullName})
+	if err != nil {
+		return "", errors.New("failed to create profile")
+	}
+
+	return utils.GenerateToken(user.ID.String(), s.jwtSecret)
 }
 
 func (s *AuthService) Login(ctx context.Context, email, password string) (string, error) {
@@ -41,5 +53,5 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (string
 		return "", errors.New("invalid credentials")
 	}
 
-	return utils.GenerateToken(user.ID, s.jwtSecret)
+	return utils.GenerateToken(user.ID.String(), s.jwtSecret)
 }
