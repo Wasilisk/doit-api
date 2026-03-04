@@ -18,7 +18,7 @@ func (a *App) RegisterRoutes(r *gin.Engine, jwtSecret string) {
 
 		api.GET("/tags", a.tagHandler.GetTags)
 		api.POST("/tags", a.tagHandler.CreateTag)
-		api.PUT("/tags/:id", a.tagHandler.UpdateTag)
+		api.PATCH("/tags/:id", a.tagHandler.UpdateTag)
 		api.DELETE("/tags/:id", a.tagHandler.DeleteTag)
 	}
 	r.Static("/static", "./static")
