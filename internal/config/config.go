@@ -4,8 +4,6 @@ import (
 	"log"
 	"os"
 
-	"path/filepath"
-
 	"github.com/joho/godotenv"
 )
 
@@ -25,9 +23,7 @@ type Config struct {
 }
 
 func Load() *Config {
-	root, _ := filepath.Abs(filepath.Join(".", "..", ".."))
-
-	err := godotenv.Load(filepath.Join(root, ".env"))
+	err := godotenv.Load(".env")
 	if err != nil {
 		log.Println(".env file not found, using environment variables")
 	}
