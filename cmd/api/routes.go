@@ -16,4 +16,5 @@ func (a *App) RegisterRoutes(r *gin.Engine, jwtSecret string) {
 		api.GET("/profile", a.profileHandler.GetProfile)
 		api.PATCH("/profile", a.profileHandler.UpdateProfile)
 	}
+	r.Static("/static", "./static")
 }
