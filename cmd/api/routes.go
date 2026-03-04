@@ -15,6 +15,11 @@ func (a *App) RegisterRoutes(r *gin.Engine, jwtSecret string) {
 	{
 		api.GET("/profile", a.profileHandler.GetProfile)
 		api.PATCH("/profile", a.profileHandler.UpdateProfile)
+
+		api.GET("/tags", a.tagHandler.GetTags)
+		api.POST("/tags", a.tagHandler.CreateTag)
+		api.PUT("/tags/:id", a.tagHandler.UpdateTag)
+		api.DELETE("/tags/:id", a.tagHandler.DeleteTag)
 	}
 	r.Static("/static", "./static")
 }
