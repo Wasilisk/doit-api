@@ -33,12 +33,36 @@ func (h *ProfileHandler) GetProfile(c *gin.Context) {
 func (h *ProfileHandler) UpdateProfile(c *gin.Context) {
 	userID := c.MustGet("userID").(uuid.UUID)
 
-	req, ok := handlerutils.BindJSON[dto.UpdateProfileRequest](c)
+	req, ok := handlerutils.Bind[dto.UpdateProfileRequest](c)
 	if !ok {
 		return
 	}
 
-	profile, err := h.profileService.UpdateProfile(c.Request.Context(), userID, req)
+	if err := c.Request.ParseMultipartForm(10 << 20); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to parse form"})
+		return
+	}
+
+	var avatarURL *string
+	file, header, err := c.Request.FormFile("avatar")
+	if err == nil {
+		defer file.Close()
+
+		url, err := h.profileService.UploadAvatar(c.Request.Context(), userID, file, header)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		avatarURL = &url
+	}
+
+	updateInput := service.UpdateProfileInput{
+		UserID:    userID,
+		FullName:  req.FullName,
+		AvatarURL: avatarURL,
+	}
+
+	profile, err := h.profileService.UpdateProfile(c.Request.Context(), updateInput)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
