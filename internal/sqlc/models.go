@@ -10,6 +10,15 @@ import (
 	"github.com/google/uuid"
 )
 
+type Tag struct {
+	ID        uuid.UUID
+	UserID    uuid.UUID
+	Name      string
+	Color     string
+	CreatedAt sql.NullTime
+	UpdatedAt sql.NullTime
+}
+
 type User struct {
 	ID        uuid.UUID
 	Email     string
