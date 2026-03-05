@@ -30,6 +30,9 @@ go.work
 *.sublime-workspace
 *.sublime-project
 
+# Air build files
+/tmp/
+
 # OS files
 .DS_Store
 Thumbs.db
