@@ -19,6 +19,26 @@ type Tag struct {
 	UpdatedAt sql.NullTime
 }
 
+type Task struct {
+	ID          uuid.UUID
+	UserID      uuid.UUID
+	Name        string
+	Description sql.NullString
+	Date        sql.NullTime
+	TimeStart   sql.NullTime
+	TimeEnd     sql.NullTime
+	IsCompleted bool
+	IsFavourite bool
+	DeletedAt   sql.NullTime
+	CreatedAt   sql.NullTime
+	UpdatedAt   sql.NullTime
+}
+
+type TaskTag struct {
+	TaskID uuid.UUID
+	TagID  uuid.UUID
+}
+
 type User struct {
 	ID        uuid.UUID
 	Email     string
