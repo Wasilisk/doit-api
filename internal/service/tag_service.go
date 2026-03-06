@@ -84,6 +84,6 @@ func toTagResponse(t sqlc.Tag) dto.TagResponse {
 		UserID:    t.UserID.String(),
 		Name:      t.Name,
 		Color:     t.Color,
-		CreatedAt: t.CreatedAt.Time,
+		CreatedAt: t.CreatedAt,
 	}
 }

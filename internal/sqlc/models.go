@@ -6,6 +6,7 @@ package sqlc
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -15,8 +16,8 @@ type Tag struct {
 	UserID    uuid.UUID
 	Name      string
 	Color     string
-	CreatedAt sql.NullTime
-	UpdatedAt sql.NullTime
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type Task struct {
@@ -30,8 +31,8 @@ type Task struct {
 	IsCompleted bool
 	IsFavourite bool
 	DeletedAt   sql.NullTime
-	CreatedAt   sql.NullTime
-	UpdatedAt   sql.NullTime
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 type TaskTag struct {
@@ -43,8 +44,8 @@ type User struct {
 	ID        uuid.UUID
 	Email     string
 	Password  string
-	CreatedAt sql.NullTime
-	UpdatedAt sql.NullTime
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type UserProfile struct {
@@ -52,6 +53,6 @@ type UserProfile struct {
 	UserID    uuid.UUID
 	FullName  string
 	AvatarUrl sql.NullString
-	CreatedAt sql.NullTime
-	UpdatedAt sql.NullTime
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }

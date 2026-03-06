@@ -8,6 +8,7 @@ package sqlc
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -89,7 +90,7 @@ type GetUserWithProfileRow struct {
 	Email     string
 	FullName  sql.NullString
 	AvatarUrl sql.NullString
-	CreatedAt sql.NullTime
+	CreatedAt time.Time
 }
 
 func (q *Queries) GetUserWithProfile(ctx context.Context, id uuid.UUID) (GetUserWithProfileRow, error) {

@@ -10,8 +10,8 @@ CREATE TABLE tasks (
     is_completed BOOLEAN NOT NULL DEFAULT FALSE,
     is_favourite BOOLEAN NOT NULL DEFAULT FALSE,
     deleted_at TIMESTAMPTZ,
-    created_at TIMESTAMPTZ DEFAULT NOW (),
-    updated_at TIMESTAMPTZ DEFAULT NOW ()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW (),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW ()
 );
 
 -- +goose Down

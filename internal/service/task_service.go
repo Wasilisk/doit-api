@@ -139,10 +139,11 @@ func (s *TaskService) buildTaskResponse(ctx context.Context, task sqlc.Task) (dt
 	tagResponses := make([]dto.TagResponse, len(tags))
 	for i, tag := range tags {
 		tagResponses[i] = dto.TagResponse{
-			ID:     tag.ID.String(),
-			UserID: tag.UserID.String(),
-			Name:   tag.Name,
-			Color:  tag.Color,
+			ID:        tag.ID.String(),
+			UserID:    tag.UserID.String(),
+			Name:      tag.Name,
+			Color:     tag.Color,
+			CreatedAt: tag.CreatedAt,
 		}
 	}
 
@@ -153,7 +154,7 @@ func (s *TaskService) buildTaskResponse(ctx context.Context, task sqlc.Task) (dt
 		IsCompleted: task.IsCompleted,
 		IsFavourite: task.IsFavourite,
 		Tags:        tagResponses,
-		CreatedAt:   task.CreatedAt.Time,
+		CreatedAt:   task.CreatedAt,
 		Description: utils.NullStringToPtr(task.Description),
 		Date:        utils.NullableTime(task.Date),
 		TimeStart:   utils.NullableTime(task.TimeStart),
