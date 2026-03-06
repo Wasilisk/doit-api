@@ -1,5 +1,7 @@
 package dto
 
+import "time"
+
 type CreateTaskRequest struct {
 	Name        string   `json:"name"        binding:"required"`
 	Description *string  `json:"description"`
@@ -37,7 +39,7 @@ type TaskResponse struct {
 	TimeEnd     *int64        `json:"time_end"`
 	IsCompleted bool          `json:"is_completed"`
 	IsFavourite bool          `json:"is_favourite"`
-	DeletedAt   *string       `json:"deleted_at"`
+	DeletedAt   *time.Time    `json:"deleted_at"`
 	Tags        []TagResponse `json:"tags"`
-	CreatedAt   string        `json:"created_at"`
+	CreatedAt   time.Time     `json:"created_at"`
 }

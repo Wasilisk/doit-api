@@ -20,10 +20,9 @@ func NullTimeToUnix(t sql.NullTime) *int64 {
 	return &unix
 }
 
-func NullTimeToStringPtr(nt sql.NullTime) *string {
-	if !nt.Valid {
+func NullableTime(t sql.NullTime) *time.Time {
+	if !t.Valid {
 		return nil
 	}
-	s := nt.Time.Format(time.RFC3339)
-	return &s
+	return &t.Time
 }
