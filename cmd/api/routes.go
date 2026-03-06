@@ -20,6 +20,13 @@ func (a *App) RegisterRoutes(r *gin.Engine, jwtSecret string) {
 		api.POST("/tags", a.tagHandler.CreateTag)
 		api.PATCH("/tags/:id", a.tagHandler.UpdateTag)
 		api.DELETE("/tags/:id", a.tagHandler.DeleteTag)
+
+		api.GET("/tasks", a.taskHandler.GetTasks)
+		api.POST("/tasks", a.taskHandler.CreateTask)
+		api.PATCH("/tasks/:id", a.taskHandler.PatchTask)
+		api.GET("/tasks/:id", a.taskHandler.GetTaskByID)
+		api.DELETE("/tasks/:id", a.taskHandler.DeleteTask)
+		api.POST("/tasks/:id/restore", a.taskHandler.RestoreTask)
 	}
 	r.Static("/static", "./static")
 }

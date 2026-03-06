@@ -13,6 +13,7 @@ type App struct {
 	authHandler    *handler.AuthHandler
 	profileHandler *handler.ProfileHandler
 	tagHandler     *handler.TagHandler
+	taskHandler    *handler.TaskHandler
 }
 
 func NewApp(db *sql.DB, cfg *config.Config) *App {
@@ -20,16 +21,19 @@ func NewApp(db *sql.DB, cfg *config.Config) *App {
 	userRepo := repository.NewUserRepository(db)
 	profileRepo := repository.NewProfileRepository(db)
 	tagRepo := repository.NewTagRepository(db)
+	taskRepo := repository.NewTaskRepository(db)
 
 	// services
 	authService := service.NewAuthService(userRepo, profileRepo, cfg.JWT_SECRET)
 	profileService := service.NewProfileService(profileRepo)
 	tagService := service.NewTagService(tagRepo)
+	taskService := service.NewTaskService(taskRepo)
 
 	// handlers
 	return &App{
 		authHandler:    handler.NewAuthHandler(authService),
 		profileHandler: handler.NewProfileHandler(profileService),
 		tagHandler:     handler.NewTagHandler(tagService),
+		taskHandler:    handler.NewTaskHandler(taskService),
 	}
 }
