@@ -17,9 +17,9 @@ type CreateTaskInput struct {
 	UserID      uuid.UUID
 	Name        string
 	Description *string
-	Date        *int64
-	TimeStart   *int64
-	TimeEnd     *int64
+	Date        *time.Time
+	TimeStart   *time.Time
+	TimeEnd     *time.Time
 }
 
 type UpdateTaskInput struct {
@@ -27,16 +27,16 @@ type UpdateTaskInput struct {
 	UserID      uuid.UUID
 	Name        *string
 	Description *string
-	Date        *int64
-	TimeStart   *int64
-	TimeEnd     *int64
+	Date        *time.Time
+	TimeStart   *time.Time
+	TimeEnd     *time.Time
 	IsCompleted *bool
 	IsFavourite *bool
 }
 
 type TaskFilterInput struct {
 	UserID      uuid.UUID
-	Date        *int64
+	Date        *time.Time
 	TagID       *string
 	IsCompleted *bool
 	IsDeleted   *bool
@@ -56,9 +56,9 @@ func (r *TaskRepository) CreateTask(ctx context.Context, input CreateTaskInput) 
 		UserID:      input.UserID,
 		Name:        input.Name,
 		Description: utils.StringToNullString(input.Description),
-		Date:        utils.UnixToNullTime(input.Date),
-		TimeStart:   utils.UnixToNullTime(input.TimeStart),
-		TimeEnd:     utils.UnixToNullTime(input.TimeEnd),
+		Date:        utils.NullTimeFrom(input.Date),
+		TimeStart:   utils.NullTimeFrom(input.TimeStart),
+		TimeEnd:     utils.NullTimeFrom(input.TimeEnd),
 	}
 	return r.queries.CreateTask(ctx, params)
 }
@@ -81,17 +81,17 @@ func (r *TaskRepository) UpdateTask(ctx context.Context, input UpdateTaskInput) 
 
 	date := existing.Date
 	if input.Date != nil {
-		date = utils.UnixToNullTime(input.Date)
+		date = utils.NullTimeFrom(input.Date)
 	}
 
 	timeStart := existing.TimeStart
 	if input.TimeStart != nil {
-		timeStart = utils.UnixToNullTime(input.TimeStart)
+		timeStart = utils.NullTimeFrom(input.TimeStart)
 	}
 
 	timeEnd := existing.TimeEnd
 	if input.TimeEnd != nil {
-		timeEnd = utils.UnixToNullTime(input.TimeEnd)
+		timeEnd = utils.NullTimeFrom(input.TimeEnd)
 	}
 
 	isCompleted := existing.IsCompleted
@@ -147,7 +147,7 @@ func (r *TaskRepository) GetTasks(ctx context.Context, filter TaskFilterInput) (
 	}
 
 	if filter.Date != nil {
-		t := time.Unix(*filter.Date, 0).UTC()
+		t := filter.Date.UTC()
 		dayStart := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC)
 		dayEnd := dayStart.Add(24 * time.Hour)
 		qb = qb.Where(sq.GtOrEq{"date": dayStart}).Where(sq.Lt{"date": dayEnd})

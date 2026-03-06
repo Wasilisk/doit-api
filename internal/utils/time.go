@@ -26,3 +26,10 @@ func NullableTime(t sql.NullTime) *time.Time {
 	}
 	return &t.Time
 }
+
+func NullTimeFrom(t *time.Time) sql.NullTime {
+	if t == nil {
+		return sql.NullTime{}
+	}
+	return sql.NullTime{Time: *t, Valid: true}
+}

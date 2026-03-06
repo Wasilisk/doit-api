@@ -4,7 +4,7 @@ CREATE TABLE tasks (
     user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     description TEXT,
-    date DATE,
+    date TIMESTAMPTZ,
     time_start TIMESTAMPTZ,
     time_end TIMESTAMPTZ,
     is_completed BOOLEAN NOT NULL DEFAULT FALSE,

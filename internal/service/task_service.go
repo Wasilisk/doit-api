@@ -155,9 +155,9 @@ func (s *TaskService) buildTaskResponse(ctx context.Context, task sqlc.Task) (dt
 		Tags:        tagResponses,
 		CreatedAt:   task.CreatedAt.Time,
 		Description: utils.NullStringToPtr(task.Description),
-		Date:        utils.NullTimeToUnix(task.Date),
-		TimeStart:   utils.NullTimeToUnix(task.TimeStart),
-		TimeEnd:     utils.NullTimeToUnix(task.TimeEnd),
+		Date:        utils.NullableTime(task.Date),
+		TimeStart:   utils.NullableTime(task.TimeStart),
+		TimeEnd:     utils.NullableTime(task.TimeEnd),
 		DeletedAt:   utils.NullableTime(task.DeletedAt),
 	}, nil
 }
