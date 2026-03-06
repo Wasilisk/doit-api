@@ -9,18 +9,8 @@ WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL;
 
 -- name: UpdateTask :one
 UPDATE tasks
-SET name = $3, description = $4, date = $5, time_start = $6, time_end = $7, updated_at = NOW()
+SET name = $3, description = $4, date = $5, time_start = $6, time_end = $7, is_completed = $8, is_favourite = $9, updated_at = NOW()
 WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
-RETURNING *;
-
--- name: SetTaskCompleted :one
-UPDATE tasks SET is_completed = $3, updated_at = NOW()
-WHERE id = $1 AND user_id = $2
-RETURNING *;
-
--- name: SetTaskFavourite :one
-UPDATE tasks SET is_favourite = $3, updated_at = NOW()
-WHERE id = $1 AND user_id = $2
 RETURNING *;
 
 -- name: SoftDeleteTask :exec

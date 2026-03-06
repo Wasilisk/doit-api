@@ -164,70 +164,6 @@ func (q *Queries) RestoreTask(ctx context.Context, arg RestoreTaskParams) error 
 	return err
 }
 
-const setTaskCompleted = `-- name: SetTaskCompleted :one
-UPDATE tasks SET is_completed = $3, updated_at = NOW()
-WHERE id = $1 AND user_id = $2
-RETURNING id, user_id, name, description, date, time_start, time_end, is_completed, is_favourite, deleted_at, created_at, updated_at
-`
-
-type SetTaskCompletedParams struct {
-	ID          uuid.UUID
-	UserID      uuid.UUID
-	IsCompleted bool
-}
-
-func (q *Queries) SetTaskCompleted(ctx context.Context, arg SetTaskCompletedParams) (Task, error) {
-	row := q.db.QueryRowContext(ctx, setTaskCompleted, arg.ID, arg.UserID, arg.IsCompleted)
-	var i Task
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.Name,
-		&i.Description,
-		&i.Date,
-		&i.TimeStart,
-		&i.TimeEnd,
-		&i.IsCompleted,
-		&i.IsFavourite,
-		&i.DeletedAt,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
-const setTaskFavourite = `-- name: SetTaskFavourite :one
-UPDATE tasks SET is_favourite = $3, updated_at = NOW()
-WHERE id = $1 AND user_id = $2
-RETURNING id, user_id, name, description, date, time_start, time_end, is_completed, is_favourite, deleted_at, created_at, updated_at
-`
-
-type SetTaskFavouriteParams struct {
-	ID          uuid.UUID
-	UserID      uuid.UUID
-	IsFavourite bool
-}
-
-func (q *Queries) SetTaskFavourite(ctx context.Context, arg SetTaskFavouriteParams) (Task, error) {
-	row := q.db.QueryRowContext(ctx, setTaskFavourite, arg.ID, arg.UserID, arg.IsFavourite)
-	var i Task
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.Name,
-		&i.Description,
-		&i.Date,
-		&i.TimeStart,
-		&i.TimeEnd,
-		&i.IsCompleted,
-		&i.IsFavourite,
-		&i.DeletedAt,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
 const softDeleteTask = `-- name: SoftDeleteTask :exec
 UPDATE tasks SET deleted_at = NOW()
 WHERE id = $1 AND user_id = $2
@@ -245,7 +181,7 @@ func (q *Queries) SoftDeleteTask(ctx context.Context, arg SoftDeleteTaskParams) 
 
 const updateTask = `-- name: UpdateTask :one
 UPDATE tasks
-SET name = $3, description = $4, date = $5, time_start = $6, time_end = $7, updated_at = NOW()
+SET name = $3, description = $4, date = $5, time_start = $6, time_end = $7, is_completed = $8, is_favourite = $9, updated_at = NOW()
 WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
 RETURNING id, user_id, name, description, date, time_start, time_end, is_completed, is_favourite, deleted_at, created_at, updated_at
 `
@@ -258,6 +194,8 @@ type UpdateTaskParams struct {
 	Date        sql.NullTime
 	TimeStart   sql.NullTime
 	TimeEnd     sql.NullTime
+	IsCompleted bool
+	IsFavourite bool
 }
 
 func (q *Queries) UpdateTask(ctx context.Context, arg UpdateTaskParams) (Task, error) {
@@ -269,6 +207,8 @@ func (q *Queries) UpdateTask(ctx context.Context, arg UpdateTaskParams) (Task, e
 		arg.Date,
 		arg.TimeStart,
 		arg.TimeEnd,
+		arg.IsCompleted,
+		arg.IsFavourite,
 	)
 	var i Task
 	err := row.Scan(
