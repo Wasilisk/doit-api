@@ -2,10 +2,11 @@ package service
 
 import (
 	"context"
-	"errors"
 
+	apperror "github.com/wasilisk/doit-api/internal/app_error"
 	"github.com/wasilisk/doit-api/internal/repository"
 	"github.com/wasilisk/doit-api/internal/utils"
+	dbutils "github.com/wasilisk/doit-api/internal/utils/db"
 )
 
 type AuthService struct {
@@ -27,17 +28,20 @@ func NewAuthService(userRepo *repository.UserRepository, profileRepo *repository
 func (s *AuthService) Register(ctx context.Context, input RegisterInput) (string, error) {
 	hashedPassword, err := utils.HashPassword(input.Password)
 	if err != nil {
-		return "", err
+		return "", apperror.ErrPasswordHashingFailed
 	}
 
 	user, err := s.userRepo.CreateUser(ctx, input.Email, hashedPassword)
 	if err != nil {
-		return "", errors.New(err.Error())
+		if dbutils.IsUniqueViolation(err) {
+			return "", apperror.ErrEmailAlreadyExists
+		}
+		return "", apperror.ErrInternal
 	}
 
 	_, err = s.profileRepo.CreateProfile(ctx, repository.CreateProfileInput{UserID: user.ID, FullName: input.FullName})
 	if err != nil {
-		return "", errors.New("failed to create profile")
+		return "", apperror.ErrProfileCreationFailed
 	}
 
 	return utils.GenerateToken(user.ID.String(), s.jwtSecret)
@@ -46,11 +50,11 @@ func (s *AuthService) Register(ctx context.Context, input RegisterInput) (string
 func (s *AuthService) Login(ctx context.Context, email, password string) (string, error) {
 	user, err := s.userRepo.GetUserByEmail(ctx, email)
 	if err != nil {
-		return "", errors.New("user with this email does not exist")
+		return "", apperror.ErrEmailAlreadyExists
 	}
 
 	if !utils.CheckPassword(password, user.Password) {
-		return "", errors.New("invalid credentials")
+		return "", apperror.ErrInvalidCredentials
 	}
 
 	return utils.GenerateToken(user.ID.String(), s.jwtSecret)

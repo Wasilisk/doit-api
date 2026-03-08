@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	apperror "github.com/wasilisk/doit-api/internal/app_error"
 	"github.com/wasilisk/doit-api/internal/dto"
 	"github.com/wasilisk/doit-api/internal/service"
 	handlerutils "github.com/wasilisk/doit-api/internal/utils/handler"
@@ -29,7 +30,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		FullName: req.FullName,
 	})
 	if err != nil {
-		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		apperror.HandleError(c, err)
 		return
 	}
 
@@ -44,7 +45,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	token, err := h.authService.Login(c.Request.Context(), req.Email, req.Password)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		apperror.HandleError(c, err)
 		return
 	}
 
