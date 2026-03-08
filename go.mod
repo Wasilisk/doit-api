@@ -3,6 +3,7 @@ module github.com/wasilisk/doit-api
 go 1.26.0
 
 require (
+	github.com/Masterminds/squirrel v1.5.4
 	github.com/gin-gonic/gin v1.12.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
@@ -10,7 +11,7 @@ require (
 	github.com/lib/pq v1.11.2
 	github.com/pressly/goose/v3 v3.3.1
 	golang.org/x/crypto v0.48.0
-	github.com/Masterminds/squirrel v1.5.4
+	github.com/gin-contrib/cors v1.7.6
 )
 
 require (
