@@ -18,6 +18,7 @@ var (
 	ErrInvalidCredentials    = New(CodeInvalidCredentials, "Invalid credentials")
 	ErrPasswordHashingFailed = New(CodePasswordHashingFailed, "Password hashing failed")
 	ErrProfileCreationFailed = New(CodeProfileCreationFailed, "Profile creation failed")
+	ErrUserWithEmailNotFound = New(CodeUserWithEmailNotFound, "User with given email not found")
 
 	ErrNotFound     = New(CodeNotFound, "Not found")
 	ErrInternal     = New(CodeInternal, "Internal server error")

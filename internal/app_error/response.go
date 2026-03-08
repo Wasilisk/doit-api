@@ -49,6 +49,8 @@ func codeToStatus(code ErrorCode) int {
 		return http.StatusUnauthorized
 	case CodeUnauthorized:
 		return http.StatusUnauthorized
+	case CodeUserWithEmailNotFound:
+		return http.StatusNotFound
 	case CodeNotFound:
 		return http.StatusNotFound
 	case CodeValidation:

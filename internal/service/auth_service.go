@@ -50,7 +50,7 @@ func (s *AuthService) Register(ctx context.Context, input RegisterInput) (string
 func (s *AuthService) Login(ctx context.Context, email, password string) (string, error) {
 	user, err := s.userRepo.GetUserByEmail(ctx, email)
 	if err != nil {
-		return "", apperror.ErrEmailAlreadyExists
+		return "", apperror.ErrUserWithEmailNotFound
 	}
 
 	if !utils.CheckPassword(password, user.Password) {
