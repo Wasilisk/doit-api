@@ -6,8 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/wasilisk/doit-api/internal/dto"
-	handlerutils "github.com/wasilisk/doit-api/internal/handler_utils"
 	"github.com/wasilisk/doit-api/internal/service"
+	handlerutils "github.com/wasilisk/doit-api/internal/utils/handler"
 )
 
 type TaskHandler struct {

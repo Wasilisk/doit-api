@@ -5,8 +5,8 @@ import (
 	"database/sql"
 
 	"github.com/google/uuid"
-	dbutils "github.com/wasilisk/doit-api/internal/db_utils"
 	"github.com/wasilisk/doit-api/internal/sqlc"
+	dbutils "github.com/wasilisk/doit-api/internal/utils/db"
 )
 
 type ProfileRepository struct {
