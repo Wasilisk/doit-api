@@ -37,7 +37,7 @@ func (r *ProfileRepository) CreateProfile(ctx context.Context, input CreateProfi
 	})
 }
 
-func (r *ProfileRepository) GetProfileByUserID(ctx context.Context, userID uuid.UUID) (sqlc.UserProfile, error) {
+func (r *ProfileRepository) GetProfileByUserID(ctx context.Context, userID uuid.UUID) (sqlc.GetProfileByUserIDRow, error) {
 	return r.queries.GetProfileByUserID(ctx, userID)
 }
 

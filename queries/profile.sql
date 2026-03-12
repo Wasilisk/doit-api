@@ -4,8 +4,9 @@ VALUES ($1, $2, $3)
 RETURNING *;
 
 -- name: GetProfileByUserID :one
-SELECT * FROM user_profiles
-WHERE user_id = $1;
+SELECT p.*, u.email FROM user_profiles p
+JOIN users u ON u.id = p.user_id
+WHERE p.user_id = $1;
 
 -- name: UpdateProfile :one
 UPDATE user_profiles

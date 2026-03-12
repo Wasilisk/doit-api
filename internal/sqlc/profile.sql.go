@@ -8,6 +8,7 @@ package sqlc
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -39,13 +40,24 @@ func (q *Queries) CreateProfile(ctx context.Context, arg CreateProfileParams) (U
 }
 
 const getProfileByUserID = `-- name: GetProfileByUserID :one
-SELECT id, user_id, full_name, avatar_url, created_at, updated_at FROM user_profiles
-WHERE user_id = $1
+SELECT p.id, p.user_id, p.full_name, p.avatar_url, p.created_at, p.updated_at, u.email FROM user_profiles p
+JOIN users u ON u.id = p.user_id
+WHERE p.user_id = $1
 `
 
-func (q *Queries) GetProfileByUserID(ctx context.Context, userID uuid.UUID) (UserProfile, error) {
+type GetProfileByUserIDRow struct {
+	ID        uuid.UUID
+	UserID    uuid.UUID
+	FullName  string
+	AvatarUrl sql.NullString
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	Email     string
+}
+
+func (q *Queries) GetProfileByUserID(ctx context.Context, userID uuid.UUID) (GetProfileByUserIDRow, error) {
 	row := q.db.QueryRowContext(ctx, getProfileByUserID, userID)
-	var i UserProfile
+	var i GetProfileByUserIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
@@ -53,6 +65,7 @@ func (q *Queries) GetProfileByUserID(ctx context.Context, userID uuid.UUID) (Use
 		&i.AvatarUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Email,
 	)
 	return i, err
 }

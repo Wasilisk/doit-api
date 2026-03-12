@@ -39,11 +39,15 @@ func (s *ProfileService) GetProfile(ctx context.Context, userID uuid.UUID) (dto.
 }
 
 func (s *ProfileService) UpdateProfile(ctx context.Context, input UpdateProfileInput) (dto.ProfileResponse, error) {
-	profile, err := s.profileRepo.UpdateProfile(ctx, repository.UpdateProfileInput{
+	_, err := s.profileRepo.UpdateProfile(ctx, repository.UpdateProfileInput{
 		UserID:    input.UserID,
 		FullName:  input.FullName,
 		AvatarURL: input.AvatarURL,
 	})
+	if err != nil {
+		return dto.ProfileResponse{}, err
+	}
+	profile, err := s.profileRepo.GetProfileByUserID(ctx, input.UserID)
 	if err != nil {
 		return dto.ProfileResponse{}, err
 	}
@@ -77,7 +81,7 @@ func (s *ProfileService) UploadAvatar(ctx context.Context, userID uuid.UUID, fil
 	return fmt.Sprintf("/static/avatars/%s", filename), nil
 }
 
-func toProfileResponse(p sqlc.UserProfile) dto.ProfileResponse {
+func toProfileResponse(p sqlc.GetProfileByUserIDRow) dto.ProfileResponse {
 	var avatar *string
 	if p.AvatarUrl.Valid {
 		avatar = &p.AvatarUrl.String
@@ -86,6 +90,7 @@ func toProfileResponse(p sqlc.UserProfile) dto.ProfileResponse {
 	return dto.ProfileResponse{
 		ID:        p.ID.String(),
 		UserID:    p.UserID.String(),
+		Email:     p.Email,
 		FullName:  p.FullName,
 		AvatarURL: avatar,
 	}
