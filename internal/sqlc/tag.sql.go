@@ -7,6 +7,7 @@ package sqlc
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -77,20 +78,34 @@ func (q *Queries) GetTagByID(ctx context.Context, arg GetTagByIDParams) (Tag, er
 }
 
 const getTagsByUserID = `-- name: GetTagsByUserID :many
-SELECT id, user_id, name, color, created_at, updated_at FROM tags
-WHERE user_id = $1
-ORDER BY created_at DESC
+SELECT t.id, t.user_id, t.name, t.color, t.created_at, t.updated_at,
+    COUNT(tt.task_id)::int AS task_count
+FROM tags t
+LEFT JOIN task_tags tt ON t.id = tt.tag_id
+WHERE t.user_id = $1
+GROUP BY t.id
+ORDER BY t.created_at DESC
 `
 
-func (q *Queries) GetTagsByUserID(ctx context.Context, userID uuid.UUID) ([]Tag, error) {
+type GetTagsByUserIDRow struct {
+	ID        uuid.UUID
+	UserID    uuid.UUID
+	Name      string
+	Color     string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	TaskCount int32
+}
+
+func (q *Queries) GetTagsByUserID(ctx context.Context, userID uuid.UUID) ([]GetTagsByUserIDRow, error) {
 	rows, err := q.db.QueryContext(ctx, getTagsByUserID, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Tag
+	var items []GetTagsByUserIDRow
 	for rows.Next() {
-		var i Tag
+		var i GetTagsByUserIDRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
@@ -98,6 +113,7 @@ func (q *Queries) GetTagsByUserID(ctx context.Context, userID uuid.UUID) ([]Tag,
 			&i.Color,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.TaskCount,
 		); err != nil {
 			return nil, err
 		}

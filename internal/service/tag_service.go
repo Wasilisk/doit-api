@@ -38,7 +38,14 @@ func (s *TagService) GetTags(ctx context.Context, userID uuid.UUID) ([]dto.TagRe
 
 	result := make([]dto.TagResponse, len(tags))
 	for i, tag := range tags {
-		result[i] = toTagResponse(tag)
+		result[i] = dto.TagResponse{
+			ID:        tag.ID.String(),
+			UserID:    tag.UserID.String(),
+			Name:      tag.Name,
+			Color:     tag.Color,
+			TaskCount: int(tag.TaskCount),
+			CreatedAt: tag.CreatedAt,
+		}
 	}
 	return result, nil
 }

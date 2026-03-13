@@ -17,5 +17,6 @@ type TagResponse struct {
 	UserID    string    `json:"user_id"`
 	Name      string    `json:"name"`
 	Color     string    `json:"color"`
+	TaskCount int       `json:"task_count"`
 	CreatedAt time.Time `json:"created_at"`
 }

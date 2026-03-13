@@ -44,7 +44,7 @@ func (r *TagRepository) GetTagByID(ctx context.Context, id, userID uuid.UUID) (s
 	})
 }
 
-func (r *TagRepository) GetTagsByUserID(ctx context.Context, userID uuid.UUID) ([]sqlc.Tag, error) {
+func (r *TagRepository) GetTagsByUserID(ctx context.Context, userID uuid.UUID) ([]sqlc.GetTagsByUserIDRow, error) {
 	return r.queries.GetTagsByUserID(ctx, userID)
 }
 
