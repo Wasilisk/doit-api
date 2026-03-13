@@ -140,7 +140,6 @@ func (s *TaskService) buildTaskResponse(ctx context.Context, task sqlc.Task) (dt
 	for i, tag := range tags {
 		tagResponses[i] = dto.TagResponse{
 			ID:        tag.ID.String(),
-			UserID:    tag.UserID.String(),
 			Name:      tag.Name,
 			Color:     tag.Color,
 			CreatedAt: tag.CreatedAt,

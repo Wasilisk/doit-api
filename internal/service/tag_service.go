@@ -40,7 +40,6 @@ func (s *TagService) GetTags(ctx context.Context, userID uuid.UUID) ([]dto.TagRe
 	for i, tag := range tags {
 		result[i] = dto.TagResponse{
 			ID:        tag.ID.String(),
-			UserID:    tag.UserID.String(),
 			Name:      tag.Name,
 			Color:     tag.Color,
 			TaskCount: int(tag.TaskCount),
@@ -88,7 +87,6 @@ func (s *TagService) DeleteTag(ctx context.Context, userID, tagID uuid.UUID) err
 func toTagResponse(t sqlc.Tag) dto.TagResponse {
 	return dto.TagResponse{
 		ID:        t.ID.String(),
-		UserID:    t.UserID.String(),
 		Name:      t.Name,
 		Color:     t.Color,
 		CreatedAt: t.CreatedAt,
