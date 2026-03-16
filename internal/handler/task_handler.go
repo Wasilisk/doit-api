@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	apperror "github.com/wasilisk/doit-api/internal/app_error"
 	"github.com/wasilisk/doit-api/internal/dto"
 	"github.com/wasilisk/doit-api/internal/service"
 	handlerutils "github.com/wasilisk/doit-api/internal/utils/handler"
@@ -28,7 +29,7 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 
 	task, err := h.taskService.CreateTask(c.Request.Context(), userID, *req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		apperror.HandleError(c, err)
 		return
 	}
 
@@ -40,7 +41,7 @@ func (h *TaskHandler) PatchTask(c *gin.Context) {
 
 	taskID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid task id"})
+		apperror.HandleError(c, apperror.New(apperror.CodeInvalidID))
 		return
 	}
 
@@ -51,7 +52,7 @@ func (h *TaskHandler) PatchTask(c *gin.Context) {
 
 	task, err := h.taskService.UpdateTask(c.Request.Context(), userID, taskID, *req)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		apperror.HandleError(c, err)
 		return
 	}
 
@@ -63,13 +64,13 @@ func (h *TaskHandler) GetTasks(c *gin.Context) {
 
 	var filter dto.TaskFilterRequest
 	if err := c.ShouldBindQuery(&filter); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		apperror.HandleError(c, apperror.New(apperror.CodeBadRequest))
 		return
 	}
 
 	tasks, err := h.taskService.GetTasks(c.Request.Context(), userID, filter)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		apperror.HandleError(c, err)
 		return
 	}
 
@@ -81,13 +82,13 @@ func (h *TaskHandler) GetTaskByID(c *gin.Context) {
 
 	taskID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid task id"})
+		apperror.HandleError(c, apperror.New(apperror.CodeInvalidID))
 		return
 	}
 
 	task, err := h.taskService.GetTaskByID(c.Request.Context(), userID, taskID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		apperror.HandleError(c, err)
 		return
 	}
 
@@ -99,12 +100,12 @@ func (h *TaskHandler) DeleteTask(c *gin.Context) {
 
 	taskID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid task id"})
+		apperror.HandleError(c, apperror.New(apperror.CodeInvalidID))
 		return
 	}
 
 	if err := h.taskService.DeleteTask(c.Request.Context(), userID, taskID); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		apperror.HandleError(c, err)
 		return
 	}
 
@@ -116,14 +117,14 @@ func (h *TaskHandler) RestoreTask(c *gin.Context) {
 
 	taskID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid task id"})
+		apperror.HandleError(c, apperror.New(apperror.CodeInvalidID))
 		return
 	}
 
 	if err := h.taskService.RestoreTask(c.Request.Context(), userID, taskID); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		apperror.HandleError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "task restored"})
+	c.JSON(http.StatusOK, nil)
 }

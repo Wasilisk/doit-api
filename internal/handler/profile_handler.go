@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	apperror "github.com/wasilisk/doit-api/internal/app_error"
 	"github.com/wasilisk/doit-api/internal/dto"
 	"github.com/wasilisk/doit-api/internal/service"
 	handlerutils "github.com/wasilisk/doit-api/internal/utils/handler"
@@ -23,7 +24,7 @@ func (h *ProfileHandler) GetProfile(c *gin.Context) {
 
 	profile, err := h.profileService.GetProfile(c.Request.Context(), userID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "profile not found"})
+		apperror.HandleError(c, err)
 		return
 	}
 
@@ -39,7 +40,7 @@ func (h *ProfileHandler) UpdateProfile(c *gin.Context) {
 	}
 
 	if err := c.Request.ParseMultipartForm(10 << 20); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to parse form"})
+		apperror.HandleError(c, apperror.New(apperror.CodeFormParseFailed))
 		return
 	}
 
@@ -50,7 +51,7 @@ func (h *ProfileHandler) UpdateProfile(c *gin.Context) {
 
 		url, err := h.profileService.UploadAvatar(c.Request.Context(), userID, file, header)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			apperror.HandleError(c, err)
 			return
 		}
 		avatarURL = &url
@@ -64,7 +65,7 @@ func (h *ProfileHandler) UpdateProfile(c *gin.Context) {
 
 	profile, err := h.profileService.UpdateProfile(c.Request.Context(), updateInput)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		apperror.HandleError(c, err)
 		return
 	}
 

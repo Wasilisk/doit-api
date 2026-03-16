@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	apperror "github.com/wasilisk/doit-api/internal/app_error"
 	"github.com/wasilisk/doit-api/internal/dto"
 	"github.com/wasilisk/doit-api/internal/service"
 	handlerutils "github.com/wasilisk/doit-api/internal/utils/handler"
@@ -28,7 +29,7 @@ func (h *TagHandler) CreateTag(c *gin.Context) {
 
 	tag, err := h.tagService.CreateTag(c.Request.Context(), userID, *req)
 	if err != nil {
-		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		apperror.HandleError(c, err)
 		return
 	}
 
@@ -40,7 +41,7 @@ func (h *TagHandler) GetTags(c *gin.Context) {
 
 	tags, err := h.tagService.GetTags(c.Request.Context(), userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		apperror.HandleError(c, err)
 		return
 	}
 
@@ -52,7 +53,7 @@ func (h *TagHandler) UpdateTag(c *gin.Context) {
 
 	tagID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid tag id"})
+		apperror.HandleError(c, apperror.New(apperror.CodeInvalidID))
 		return
 	}
 
@@ -63,7 +64,7 @@ func (h *TagHandler) UpdateTag(c *gin.Context) {
 
 	tag, err := h.tagService.UpdateTag(c.Request.Context(), userID, tagID, *req)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		apperror.HandleError(c, err)
 		return
 	}
 
@@ -75,12 +76,12 @@ func (h *TagHandler) DeleteTag(c *gin.Context) {
 
 	tagID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid tag id"})
+		apperror.HandleError(c, apperror.New(apperror.CodeInvalidID))
 		return
 	}
 
 	if err := h.tagService.DeleteTag(c.Request.Context(), userID, tagID); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		apperror.HandleError(c, err)
 		return
 	}
 

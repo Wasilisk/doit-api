@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	apperror "github.com/wasilisk/doit-api/internal/app_error"
+	"github.com/wasilisk/doit-api/internal/i18n"
 )
 
 func Bind[T any](c *gin.Context) (*T, bool) {
@@ -30,15 +31,34 @@ func bindWith[T any](c *gin.Context, req *T, bindFn func() error) (*T, bool) {
 }
 
 func handleBindError(c *gin.Context, err error) {
-	if fields := toFieldErrors(err); fields != nil {
+	lang := getLang(c)
+
+	if fields := toFieldErrors(err, lang); fields != nil {
 		c.JSON(http.StatusUnprocessableEntity, apperror.ErrorResponse{
 			Error: apperror.ErrorBody{
-				Code:    apperror.ErrValidation.Code,
-				Message: apperror.ErrValidation.Message,
+				Code:    apperror.CodeValidation,
+				Message: i18n.Translate(string(apperror.CodeValidation), lang),
 				Fields:  fields,
 			},
 		})
 		return
 	}
-	c.JSON(http.StatusBadRequest, apperror.ErrValidation)
+	c.JSON(http.StatusBadRequest, apperror.ErrorResponse{
+		Error: apperror.ErrorBody{
+			Code:    apperror.CodeBadRequest,
+			Message: i18n.Translate(string(apperror.CodeBadRequest), lang),
+		},
+	})
+}
+
+func getLang(c *gin.Context) i18n.Lang {
+	lang, exists := c.Get("lang")
+	if !exists {
+		return i18n.EN
+	}
+	l, ok := lang.(i18n.Lang)
+	if !ok {
+		return i18n.EN
+	}
+	return l
 }

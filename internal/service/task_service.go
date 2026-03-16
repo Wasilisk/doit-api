@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
-	"errors"
 
 	"github.com/google/uuid"
+	apperror "github.com/wasilisk/doit-api/internal/app_error"
 	"github.com/wasilisk/doit-api/internal/dto"
 	"github.com/wasilisk/doit-api/internal/repository"
 	"github.com/wasilisk/doit-api/internal/sqlc"
@@ -30,7 +30,7 @@ func (s *TaskService) CreateTask(ctx context.Context, userID uuid.UUID, req dto.
 		TimeEnd:     req.TimeEnd,
 	})
 	if err != nil {
-		return dto.TaskResponse{}, err
+		return dto.TaskResponse{}, apperror.New(apperror.CodeInternal)
 	}
 
 	for _, tagID := range req.TagIDs {
@@ -57,7 +57,7 @@ func (s *TaskService) UpdateTask(ctx context.Context, userID, taskID uuid.UUID, 
 		IsFavourite: req.IsFavourite,
 	})
 	if err != nil {
-		return dto.TaskResponse{}, errors.New("task not found")
+		return dto.TaskResponse{}, apperror.New(apperror.CodeTaskNotFound)
 	}
 
 	if req.TagIDs != nil {
@@ -99,7 +99,7 @@ func (s *TaskService) GetTasks(ctx context.Context, userID uuid.UUID, filter dto
 		IsDeleted:   filter.IsDeleted,
 	})
 	if err != nil {
-		return nil, err
+		return nil, apperror.New(apperror.CodeInternal)
 	}
 
 	result := make([]dto.TaskResponse, 0, len(tasks))
@@ -116,7 +116,7 @@ func (s *TaskService) GetTasks(ctx context.Context, userID uuid.UUID, filter dto
 func (s *TaskService) GetTaskByID(ctx context.Context, userID, taskID uuid.UUID) (dto.TaskResponse, error) {
 	task, err := s.taskRepo.GetTaskByID(ctx, taskID, userID)
 	if err != nil {
-		return dto.TaskResponse{}, errors.New("task not found")
+		return dto.TaskResponse{}, apperror.New(apperror.CodeTaskNotFound)
 	}
 	return s.buildTaskResponse(ctx, task)
 }
@@ -124,7 +124,7 @@ func (s *TaskService) GetTaskByID(ctx context.Context, userID, taskID uuid.UUID)
 func (s *TaskService) DeleteTask(ctx context.Context, userID, taskID uuid.UUID) error {
 	_, err := s.taskRepo.GetTaskByID(ctx, taskID, userID)
 	if err != nil {
-		return errors.New("task not found")
+		return apperror.New(apperror.CodeTaskNotFound)
 	}
 	return s.taskRepo.SoftDeleteTask(ctx, taskID, userID)
 }

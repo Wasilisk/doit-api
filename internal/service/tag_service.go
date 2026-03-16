@@ -2,12 +2,13 @@ package service
 
 import (
 	"context"
-	"errors"
 
 	"github.com/google/uuid"
+	apperror "github.com/wasilisk/doit-api/internal/app_error"
 	"github.com/wasilisk/doit-api/internal/dto"
 	"github.com/wasilisk/doit-api/internal/repository"
 	"github.com/wasilisk/doit-api/internal/sqlc"
+	dbutils "github.com/wasilisk/doit-api/internal/utils/db"
 )
 
 type TagService struct {
@@ -25,7 +26,10 @@ func (s *TagService) CreateTag(ctx context.Context, userID uuid.UUID, req dto.Cr
 		Color:  req.Color,
 	})
 	if err != nil {
-		return dto.TagResponse{}, errors.New("tag with this name already exists")
+		if dbutils.IsUniqueViolation(err) {
+			return dto.TagResponse{}, apperror.New(apperror.CodeTagAlreadyExists)
+		}
+		return dto.TagResponse{}, apperror.New(apperror.CodeInternal)
 	}
 	return toTagResponse(tag), nil
 }
@@ -33,7 +37,7 @@ func (s *TagService) CreateTag(ctx context.Context, userID uuid.UUID, req dto.Cr
 func (s *TagService) GetTags(ctx context.Context, userID uuid.UUID) ([]dto.TagResponse, error) {
 	tags, err := s.tagRepo.GetTagsByUserID(ctx, userID)
 	if err != nil {
-		return nil, err
+		return nil, apperror.New(apperror.CodeInternal)
 	}
 
 	result := make([]dto.TagResponse, len(tags))
@@ -52,7 +56,7 @@ func (s *TagService) GetTags(ctx context.Context, userID uuid.UUID) ([]dto.TagRe
 func (s *TagService) UpdateTag(ctx context.Context, userID uuid.UUID, tagID uuid.UUID, req dto.UpdateTagRequest) (dto.TagResponse, error) {
 	existing, err := s.tagRepo.GetTagByID(ctx, tagID, userID)
 	if err != nil {
-		return dto.TagResponse{}, errors.New("tag not found")
+		return dto.TagResponse{}, apperror.New(apperror.CodeTagNotFound)
 	}
 
 	name := existing.Name
@@ -71,7 +75,10 @@ func (s *TagService) UpdateTag(ctx context.Context, userID uuid.UUID, tagID uuid
 		Color:  color,
 	})
 	if err != nil {
-		return dto.TagResponse{}, err
+		if dbutils.IsUniqueViolation(err) {
+			return dto.TagResponse{}, apperror.New(apperror.CodeTagAlreadyExists)
+		}
+		return dto.TagResponse{}, apperror.New(apperror.CodeInternal)
 	}
 	return toTagResponse(tag), nil
 }
@@ -79,7 +86,7 @@ func (s *TagService) UpdateTag(ctx context.Context, userID uuid.UUID, tagID uuid
 func (s *TagService) DeleteTag(ctx context.Context, userID, tagID uuid.UUID) error {
 	_, err := s.tagRepo.GetTagByID(ctx, tagID, userID)
 	if err != nil {
-		return errors.New("tag not found")
+		return apperror.New(apperror.CodeTagNotFound)
 	}
 	return s.tagRepo.DeleteTag(ctx, tagID, userID)
 }

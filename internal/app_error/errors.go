@@ -1,27 +1,13 @@
 package apperror
 
 type AppError struct {
-	Code    ErrorCode `json:"code"`
-	Message string    `json:"message"`
+	Code ErrorCode `json:"code"`
 }
 
 func (e *AppError) Error() string {
-	return e.Message
+	return string(e.Code)
 }
 
-func New(code ErrorCode, message string) *AppError {
-	return &AppError{Code: code, Message: message}
+func New(code ErrorCode) *AppError {
+	return &AppError{Code: code}
 }
-
-var (
-	ErrEmailAlreadyExists    = New(CodeEmailAlreadyExists, "Email already exists")
-	ErrInvalidCredentials    = New(CodeInvalidCredentials, "Invalid credentials")
-	ErrPasswordHashingFailed = New(CodePasswordHashingFailed, "Password hashing failed")
-	ErrProfileCreationFailed = New(CodeProfileCreationFailed, "Profile creation failed")
-	ErrUserWithEmailNotFound = New(CodeUserWithEmailNotFound, "User with given email not found")
-
-	ErrNotFound     = New(CodeNotFound, "Not found")
-	ErrInternal     = New(CodeInternal, "Internal server error")
-	ErrUnauthorized = New(CodeUnauthorized, "Unauthorized")
-	ErrValidation   = New(CodeValidation, "Validation error")
-)

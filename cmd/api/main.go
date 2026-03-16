@@ -9,6 +9,7 @@ import (
 	"github.com/pressly/goose/v3"
 	"github.com/wasilisk/doit-api/internal/config"
 	"github.com/wasilisk/doit-api/internal/database"
+	"github.com/wasilisk/doit-api/internal/middleware"
 )
 
 func main() {
@@ -30,10 +31,11 @@ func main() {
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{cfg.ClientOrigin},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept-Language"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
+	r.Use(middleware.Lang())
 	app.RegisterRoutes(r, cfg.JWT_SECRET)
 
 	r.Run(":" + cfg.Port)

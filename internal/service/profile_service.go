@@ -2,13 +2,15 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"mime/multipart"
 	"os"
 	"path/filepath"
 
+	"fmt"
+
 	"github.com/google/uuid"
+	apperror "github.com/wasilisk/doit-api/internal/app_error"
 	"github.com/wasilisk/doit-api/internal/dto"
 	"github.com/wasilisk/doit-api/internal/repository"
 	"github.com/wasilisk/doit-api/internal/sqlc"
@@ -33,7 +35,7 @@ func NewProfileService(profileRepo *repository.ProfileRepository) *ProfileServic
 func (s *ProfileService) GetProfile(ctx context.Context, userID uuid.UUID) (dto.ProfileResponse, error) {
 	profile, err := s.profileRepo.GetProfileByUserID(ctx, userID)
 	if err != nil {
-		return dto.ProfileResponse{}, err
+		return dto.ProfileResponse{}, apperror.New(apperror.CodeProfileNotFound)
 	}
 	return toProfileResponse(profile), nil
 }
@@ -45,11 +47,11 @@ func (s *ProfileService) UpdateProfile(ctx context.Context, input UpdateProfileI
 		AvatarURL: input.AvatarURL,
 	})
 	if err != nil {
-		return dto.ProfileResponse{}, err
+		return dto.ProfileResponse{}, apperror.New(apperror.CodeInternal)
 	}
 	profile, err := s.profileRepo.GetProfileByUserID(ctx, input.UserID)
 	if err != nil {
-		return dto.ProfileResponse{}, err
+		return dto.ProfileResponse{}, apperror.New(apperror.CodeProfileNotFound)
 	}
 	return toProfileResponse(profile), nil
 }
@@ -58,11 +60,11 @@ func (s *ProfileService) UploadAvatar(ctx context.Context, userID uuid.UUID, fil
 	ext := filepath.Ext(header.Filename)
 	allowed := map[string]bool{".jpg": true, ".jpeg": true, ".png": true, ".webp": true}
 	if !allowed[ext] {
-		return "", fmt.Errorf("file type %s not allowed", ext)
+		return "", apperror.New(apperror.CodeFileTypeNotAllowed)
 	}
 
 	if err := os.MkdirAll(avatarsDir, os.ModePerm); err != nil {
-		return "", fmt.Errorf("failed to create avatars dir: %w", err)
+		return "", apperror.New(apperror.CodeAvatarUploadFailed)
 	}
 
 	filename := fmt.Sprintf("%s%s", uuid.New().String(), ext)
@@ -70,12 +72,12 @@ func (s *ProfileService) UploadAvatar(ctx context.Context, userID uuid.UUID, fil
 
 	dest, err := os.Create(destPath)
 	if err != nil {
-		return "", fmt.Errorf("failed to create file: %w", err)
+		return "", apperror.New(apperror.CodeAvatarUploadFailed)
 	}
 	defer dest.Close()
 
 	if _, err := io.Copy(dest, file); err != nil {
-		return "", fmt.Errorf("failed to save file: %w", err)
+		return "", apperror.New(apperror.CodeAvatarUploadFailed)
 	}
 
 	return fmt.Sprintf("/static/avatars/%s", filename), nil

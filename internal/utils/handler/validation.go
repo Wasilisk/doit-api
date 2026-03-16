@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	apperror "github.com/wasilisk/doit-api/internal/app_error"
+	"github.com/wasilisk/doit-api/internal/i18n"
 )
 
 func tagToCode(tag string) apperror.ErrorCode {
@@ -24,33 +25,26 @@ func tagToCode(tag string) apperror.ErrorCode {
 	}
 }
 
-func tagToContext(tag, param string) map[string]string {
-	switch validationTag(tag) {
-	case tagMin:
-		return map[string]string{"min": param}
-	case tagMax:
-		return map[string]string{"max": param}
-	default:
-		return nil
-	}
-}
+func tagToMessage(tag, field, param string, lang i18n.Lang) string {
+	code := tagToCode(tag)
+	template := i18n.Translate(string(code), lang)
 
-func tagToMessage(tag, field, param string) string {
 	switch validationTag(tag) {
 	case tagRequired:
-		return fmt.Sprintf("%s is required", toSnakeCase(field))
+		return fmt.Sprintf(template, toSnakeCase(field))
 	case tagEmail:
-		return "Please enter a valid email address"
+		return template
 	case tagMin:
-		return fmt.Sprintf("%s must be at least %s characters", toSnakeCase(field), param)
+		return fmt.Sprintf(template, toSnakeCase(field), param)
 	case tagMax:
-		return fmt.Sprintf("%s must be at most %s characters", toSnakeCase(field), param)
+		return fmt.Sprintf(template, toSnakeCase(field), param)
 	default:
-		return fmt.Sprintf("%s is invalid", toSnakeCase(field))
+		fallback := i18n.Translate("FIELD_INVALID", lang)
+		return fmt.Sprintf(fallback, toSnakeCase(field))
 	}
 }
 
-func toFieldErrors(err error) []apperror.FieldError {
+func toFieldErrors(err error, lang i18n.Lang) []apperror.FieldError {
 	var ve validator.ValidationErrors
 	if !errors.As(err, &ve) {
 		return nil
@@ -61,8 +55,7 @@ func toFieldErrors(err error) []apperror.FieldError {
 		fields[i] = apperror.FieldError{
 			Field:   toSnakeCase(e.Field()),
 			Code:    tagToCode(e.Tag()),
-			Message: tagToMessage(e.Tag(), e.Field(), e.Param()),
-			Context: tagToContext(e.Tag(), e.Param()),
+			Message: tagToMessage(e.Tag(), e.Field(), e.Param(), lang),
 		}
 	}
 	return fields
