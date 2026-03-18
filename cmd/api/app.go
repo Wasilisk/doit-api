@@ -7,6 +7,7 @@ import (
 	"github.com/wasilisk/doit-api/internal/handler"
 	"github.com/wasilisk/doit-api/internal/repository"
 	"github.com/wasilisk/doit-api/internal/service"
+	"github.com/wasilisk/doit-api/internal/storage"
 )
 
 type App struct {
@@ -17,6 +18,9 @@ type App struct {
 }
 
 func NewApp(db *sql.DB, cfg *config.Config) *App {
+	// storage
+	avatarStorage := storage.NewAvatarStorage("./static/avatars")
+
 	// repositories
 	userRepo := repository.NewUserRepository(db)
 	profileRepo := repository.NewProfileRepository(db)
@@ -25,7 +29,7 @@ func NewApp(db *sql.DB, cfg *config.Config) *App {
 
 	// services
 	authService := service.NewAuthService(userRepo, profileRepo, cfg.JWT_SECRET)
-	profileService := service.NewProfileService(profileRepo)
+	profileService := service.NewProfileService(profileRepo, avatarStorage)
 	tagService := service.NewTagService(tagRepo)
 	taskService := service.NewTaskService(taskRepo)
 

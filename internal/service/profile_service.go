@@ -2,22 +2,20 @@ package service
 
 import (
 	"context"
-	"io"
 	"mime/multipart"
-	"os"
 	"path/filepath"
-
-	"fmt"
 
 	"github.com/google/uuid"
 	apperror "github.com/wasilisk/doit-api/internal/app_error"
 	"github.com/wasilisk/doit-api/internal/dto"
 	"github.com/wasilisk/doit-api/internal/repository"
 	"github.com/wasilisk/doit-api/internal/sqlc"
+	"github.com/wasilisk/doit-api/internal/storage"
 )
 
 type ProfileService struct {
-	profileRepo *repository.ProfileRepository
+	profileRepo   *repository.ProfileRepository
+	avatarStorage *storage.AvatarStorage
 }
 
 type UpdateProfileInput struct {
@@ -26,10 +24,8 @@ type UpdateProfileInput struct {
 	AvatarURL *string
 }
 
-const avatarsDir = "static/avatars"
-
-func NewProfileService(profileRepo *repository.ProfileRepository) *ProfileService {
-	return &ProfileService{profileRepo: profileRepo}
+func NewProfileService(profileRepo *repository.ProfileRepository, avatarStorage *storage.AvatarStorage) *ProfileService {
+	return &ProfileService{profileRepo: profileRepo, avatarStorage: avatarStorage}
 }
 
 func (s *ProfileService) GetProfile(ctx context.Context, userID uuid.UUID) (dto.ProfileResponse, error) {
@@ -41,7 +37,12 @@ func (s *ProfileService) GetProfile(ctx context.Context, userID uuid.UUID) (dto.
 }
 
 func (s *ProfileService) UpdateProfile(ctx context.Context, input UpdateProfileInput) (dto.ProfileResponse, error) {
-	_, err := s.profileRepo.UpdateProfile(ctx, repository.UpdateProfileInput{
+	existing, err := s.profileRepo.GetProfileByUserID(ctx, input.UserID)
+	if err != nil {
+		return dto.ProfileResponse{}, apperror.New(apperror.CodeProfileNotFound)
+	}
+
+	updated, err := s.profileRepo.UpdateProfile(ctx, repository.UpdateProfileInput{
 		UserID:    input.UserID,
 		FullName:  input.FullName,
 		AvatarURL: input.AvatarURL,
@@ -49,38 +50,34 @@ func (s *ProfileService) UpdateProfile(ctx context.Context, input UpdateProfileI
 	if err != nil {
 		return dto.ProfileResponse{}, apperror.New(apperror.CodeInternal)
 	}
-	profile, err := s.profileRepo.GetProfileByUserID(ctx, input.UserID)
-	if err != nil {
-		return dto.ProfileResponse{}, apperror.New(apperror.CodeProfileNotFound)
+
+	if input.AvatarURL != nil && existing.AvatarUrl.Valid {
+		if err := s.avatarStorage.Delete(existing.AvatarUrl.String); err != nil {
+			return dto.ProfileResponse{}, apperror.New(apperror.CodeAvatarUploadFailed)
+		}
 	}
-	return toProfileResponse(profile), nil
+
+	return toProfileResponse(sqlc.GetProfileByUserIDRow{
+		ID:        existing.ID,
+		UserID:    existing.UserID,
+		Email:     existing.Email,
+		FullName:  updated.FullName,
+		AvatarUrl: updated.AvatarUrl,
+	}), nil
 }
 
 func (s *ProfileService) UploadAvatar(ctx context.Context, userID uuid.UUID, file multipart.File, header *multipart.FileHeader) (string, error) {
+	if err := s.avatarStorage.Validate(header.Filename); err != nil {
+		return "", err
+	}
+
 	ext := filepath.Ext(header.Filename)
-	allowed := map[string]bool{".jpg": true, ".jpeg": true, ".png": true, ".webp": true}
-	if !allowed[ext] {
-		return "", apperror.New(apperror.CodeFileTypeNotAllowed)
-	}
-
-	if err := os.MkdirAll(avatarsDir, os.ModePerm); err != nil {
-		return "", apperror.New(apperror.CodeAvatarUploadFailed)
-	}
-
-	filename := fmt.Sprintf("%s%s", uuid.New().String(), ext)
-	destPath := filepath.Join(avatarsDir, filename)
-
-	dest, err := os.Create(destPath)
+	filename, err := s.avatarStorage.Save(file, ext)
 	if err != nil {
-		return "", apperror.New(apperror.CodeAvatarUploadFailed)
-	}
-	defer dest.Close()
-
-	if _, err := io.Copy(dest, file); err != nil {
-		return "", apperror.New(apperror.CodeAvatarUploadFailed)
+		return "", err
 	}
 
-	return fmt.Sprintf("/static/avatars/%s", filename), nil
+	return s.avatarStorage.PublicURL(filename), nil
 }
 
 func toProfileResponse(p sqlc.GetProfileByUserIDRow) dto.ProfileResponse {
