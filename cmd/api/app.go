@@ -19,7 +19,7 @@ type App struct {
 
 func NewApp(db *sql.DB, cfg *config.Config) *App {
 	// storage
-	avatarStorage := storage.NewAvatarStorage("./static/avatars")
+	avatarStorage := storage.NewAvatarStorage("./static/avatars", cfg.ServerBaseURL)
 
 	// repositories
 	userRepo := repository.NewUserRepository(db)

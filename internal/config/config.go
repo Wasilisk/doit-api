@@ -17,10 +17,11 @@ type DBConfig struct {
 }
 
 type Config struct {
-	Port         string
-	DB           DBConfig
-	JWT_SECRET   string
-	ClientOrigin string
+	Port          string
+	DB            DBConfig
+	JWT_SECRET    string
+	ClientOrigin  string
+	ServerBaseURL string
 }
 
 func Load() *Config {
@@ -39,7 +40,8 @@ func Load() *Config {
 			Name:     getEnv("DB_NAME", "postgres"),
 			SSLMode:  getEnv("DB_SSLMODE", "disable"),
 		},
-		ClientOrigin: getEnv("CLIENT_ORIGIN", "http://localhost:3000"),
+		ClientOrigin:  getEnv("CLIENT_ORIGIN", "http://localhost:3000"),
+		ServerBaseURL: getEnv("SERVER_BASE_URL", "http://localhost:8080"),
 	}
 
 	return cfg

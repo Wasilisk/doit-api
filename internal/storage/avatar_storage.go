@@ -13,10 +13,11 @@ import (
 
 type AvatarStorage struct {
 	baseDir string
+	baseURL string
 }
 
-func NewAvatarStorage(baseDir string) *AvatarStorage {
-	return &AvatarStorage{baseDir: baseDir}
+func NewAvatarStorage(baseDir string, baseURL string) *AvatarStorage {
+	return &AvatarStorage{baseDir: baseDir, baseURL: baseURL}
 }
 
 var allowedExtensions = map[string]bool{
@@ -64,5 +65,5 @@ func (s *AvatarStorage) Delete(avatarURL string) error {
 }
 
 func (s *AvatarStorage) PublicURL(filename string) string {
-	return "/static/avatars/" + filename
+	return s.baseURL + "/static/avatars/" + filename
 }
